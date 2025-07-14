@@ -1,8 +1,9 @@
 import streamlit as st
 import requests
+import re
 
 st.set_page_config(page_title="GIS Coordinate Converter", layout="centered")
-st.title("📍 GIS Coordinate Converter (Online API)")
+st.title("📍 GIS Coordinate Converter (via EPSG.io API)")
 
 CRS_OPTIONS = {
     "WGS84 (EPSG:4326)": 4326,
@@ -27,11 +28,20 @@ if st.button("Convert Coordinates"):
     try:
         url = f"https://epsg.io/trans?x={x}&y={y}&s_srs={input_epsg}&t_srs={output_epsg}"
         response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
+        content = response.text
+
+        # Extract from the HTML response
+        match = re.search(r'<input[^>]*id="x"[^>]*value="([-.\d]+)"', content)
+        x_out = match.group(1) if match else None
+
+        match = re.search(r'<input[^>]*id="y"[^>]*value="([-.\d]+)"', content)
+        y_out = match.group(1) if match else None
+
+        if x_out and y_out:
             st.success("✅ Conversion Successful!")
-            st.code(f"Converted X: {data['x']:.6f}, Y: {data['y']:.6f}")
+            st.code(f"Converted X: {float(x_out):.6f}, Y: {float(y_out):.6f}")
         else:
-            st.error("❌ Failed to fetch conversion. Try another pair or check EPSG codes.")
+            st.error("❌ Could not extract converted coordinates. Try different EPSG types.")
+
     except Exception as e:
         st.error(f"⚠️ Error: {e}")
