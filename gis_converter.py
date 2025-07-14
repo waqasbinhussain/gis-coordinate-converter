@@ -66,30 +66,3 @@ st.markdown(
     "<a href='https://www.linkedin.com/in/waqasbinhussain/' target='_blank' style='text-decoration: none; color: #0a66c2;'>🔗 Connect on LinkedIn</a></p>",
     unsafe_allow_html=True
 )
-import folium
-from streamlit_folium import st_folium
-
-# Only show map if coordinates successfully converted
-if 'x_out' in locals() and 'y_out' in locals():
-    st.markdown("### 🌍 Map View")
-
-    try:
-        # Build a folium map centered around original coordinate
-        map_center = [y, x]
-        m = folium.Map(location=map_center, zoom_start=13)
-
-        # Add original point
-        folium.Marker(
-            [y, x], popup="Original (Input)", tooltip="Input Point", icon=folium.Icon(color="blue")
-        ).add_to(m)
-
-        # Add converted point
-        folium.Marker(
-            [y_out, x_out], popup="Converted (Output)", tooltip="Converted Point", icon=folium.Icon(color="green")
-        ).add_to(m)
-
-        # Render the map
-        st_folium(m, width=700, height=500)
-
-    except Exception as e:
-        st.warning("🟡 Map preview failed (possibly due to projection mismatch for map view).")
